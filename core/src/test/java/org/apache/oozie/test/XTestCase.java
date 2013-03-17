@@ -86,33 +86,15 @@ public abstract class XTestCase extends TestCase {
     private String hadoopVersion;
     protected XLog log = new XLog(LogFactory.getLog(getClass()));
 
-    private static File OOZIE_SRC_DIR = null;
     private static final String OOZIE_TEST_PROPERTIES = "oozie.test.properties";
 
     public static float WAITFOR_RATIO = Float.parseFloat(System.getProperty("oozie.test.waitfor.ratio", "1"));
 
     static {
         try {
-            OOZIE_SRC_DIR = new File("core").getAbsoluteFile();
-            if (!OOZIE_SRC_DIR.exists()) {
-                OOZIE_SRC_DIR = OOZIE_SRC_DIR.getParentFile().getParentFile();
-                OOZIE_SRC_DIR = new File(OOZIE_SRC_DIR, "core");
-            }
-            if (!OOZIE_SRC_DIR.exists()) {
-                OOZIE_SRC_DIR = OOZIE_SRC_DIR.getParentFile().getParentFile();
-                OOZIE_SRC_DIR = new File(OOZIE_SRC_DIR, "core");
-            }
-            if (!OOZIE_SRC_DIR.exists()) {
-                System.err.println();
-                System.err.println("Could not determine project root directory");
-                System.err.println();
-                System.exit(-1);
-            }
-            OOZIE_SRC_DIR = OOZIE_SRC_DIR.getParentFile();
 
             String testPropsFile = System.getProperty(OOZIE_TEST_PROPERTIES, "test.properties");
-           File file = (testPropsFile.startsWith("/"))
-                        ? new File(testPropsFile) : new File(OOZIE_SRC_DIR, testPropsFile);
+           File file = new File(testPropsFile);
             if (file.exists()) {
                 System.out.println();
                 System.out.println("*********************************************************************************");
@@ -252,11 +234,9 @@ public abstract class XTestCase extends TestCase {
 
         // load test Oozie site
         String oozieTestDB = System.getProperty("oozie.test.db", "hsqldb");
-        String defaultOozieSize =
-            new File(OOZIE_SRC_DIR, "core/src/test/resources/" + oozieTestDB + "-oozie-site.xml").getAbsolutePath();
+        String defaultOozieSize = getClass().getResource("/" + oozieTestDB + "-oozie-site.xml").getPath();
         String customOozieSite = System.getProperty("oozie.test.config.file", defaultOozieSize);
-        File source = (customOozieSite.startsWith("/"))
-                      ? new File(customOozieSite) : new File(OOZIE_SRC_DIR, customOozieSite);
+        File source = new File(customOozieSite);
         source = source.getAbsoluteFile();
         // If we can't find it, try using the class loader (useful if we're using XTestCase from outside core)
         if (!source.exists()) {
@@ -278,7 +258,7 @@ public abstract class XTestCase extends TestCase {
         hadoopConfDir.mkdir();
         File actionConfDir = new File(testCaseConfDir, "action-conf");
         actionConfDir.mkdir();
-        source = new File(OOZIE_SRC_DIR, "core/src/test/resources/hadoop-config.xml");
+        source = new File(getClass().getResource("/hadoop-config.xml").getPath());
         target = new File(hadoopConfDir, "hadoop-site.xml");
         IOUtils.copyStream(new FileInputStream(source), new FileOutputStream(target));
 
